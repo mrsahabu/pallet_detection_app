@@ -29,6 +29,13 @@ async def create_access_token(data: dict, expire_minutes: int):
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
+async def create_access_token_forget_password(data, expiry: int):
+    payload = data.copy()
+    expire_in = datetime.utcnow() + timedelta(seconds=expiry)  # Ensure expiry is in seconds
+    payload.update({"exp": expire_in})
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
 async def create_refresh_token(data):
     return jwt.encode(data, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 

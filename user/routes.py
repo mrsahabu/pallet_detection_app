@@ -18,6 +18,7 @@ from auth.services import get_token, get_user_by_email, create_access_token, get
 from fastapi import Depends, HTTPException, status
 from email_notification.notify import send_reset_password_mail
 from user.models import UserModel
+from core.security import create_access_token_forget_password
 
 User = UserModel()
 
@@ -62,8 +63,9 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
     try:
         user = get_user_by_email(db=db, user_email=user_email)
         if user:
-            access_token = await create_access_token(data={"email": user.email}, expire_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
-            print("Getting access token!", access_token)
+            # Update this line to use 'expiry' instead of 'expire_minutes'
+            access_token = await create_access_token_forget_password(data={"email": user.email},
+                                                                     expiry=TEMP_TOKEN_EXPIRE_MINUTES * 60)
             url = f"{request.base_url}reset_password_template?access_token={access_token}"
             await send_reset_password_mail(recipient_email=user.email, user=user, url=url,
                                            expire_in_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
@@ -105,8 +107,3 @@ def user_reset_password_route(request: Request, new_password: str,
     except Exception as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
         logger.error(f'From {request.endpoint} {msg}', exc_info=e)
-
-
-
-
-

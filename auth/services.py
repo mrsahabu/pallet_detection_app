@@ -114,8 +114,13 @@ def get_user_by_email(db: Session, user_email: str):
 
 
 def get_user_videos(db: Session):
-    video = db.query(Imgs_model).all()
-    return video
+    # Create a query object using the provided session and the ImgsModel
+    query = db.query(ImgsModel)
+
+    # Execute the query to fetch all user videos
+    all_videos = query.all()
+
+    return all_videos
 
 
 def get_token_payload(token: str = Depends(oauth2_scheme)):
