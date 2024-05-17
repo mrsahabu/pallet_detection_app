@@ -1,6 +1,4 @@
 from pydantic import BaseModel, EmailStr
-from typing import Union
-from datetime import datetime
 
 
 class BaseResponse(BaseModel):

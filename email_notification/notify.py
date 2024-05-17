@@ -6,6 +6,11 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 import logging
 import ssl
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+
 logger = logging.getLogger("uvicorn")
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -68,3 +73,31 @@ async def send_reset_password_mail(recipient_email, user, url, expire_in_minutes
     except Exception as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
         logger.error(f'From send_reset_password_mail  {msg}', exc_info=e)
+
+
+def send_email_with_images_and_count(email_to: str, subject: str, message: str, image_paths: list, pallets_count: int):
+    msg = MIMEMultipart()
+    msg['From'] = SENDER_GMAIL
+    msg['To'] = email_to
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(message, 'plain'))
+
+    # Attach images
+    for img_path in image_paths:
+        with open(img_path, 'rb') as img_file:
+            img_data = img_file.read()
+            image = MIMEImage(img_data, name='image.png')
+            msg.attach(image)
+
+    # Add pallets count to message
+    msg.attach(MIMEText(f"Pallets Count: {pallets_count}", 'plain'))
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login(SENDER_GMAIL, SENDER_GMAIL_PASSWORD)
+            smtp.send_message(msg)
+    except Exception as e:
+        print("Failed to send email:", str(e))
