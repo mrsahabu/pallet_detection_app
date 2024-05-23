@@ -23,12 +23,12 @@ async def create_user_account(data, db):
 
 def user_reset_password(db: Session, email: str, new_password: str):
     try:
-        user = db.query(UserModel).filter(UserModel.email == email).first()
+        user = db.query(UserModel).filter(UserModel.email == email)
         user.password = get_password_hash(new_password)
-        db.add(user)
+        # db.add(user)
         db.commit()
 
     except Exception as e:
-        raise(e)
+        raise (e)
         return False
     return True

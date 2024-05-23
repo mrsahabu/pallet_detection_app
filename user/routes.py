@@ -1,24 +1,32 @@
+import base64
+import os
 import sys
 from pathlib import Path
+from typing import List
 from venv import logger
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from starlette.background import BackgroundTasks
+from starlette.responses import FileResponse
 from starlette.templating import Jinja2Templates
 
 from core.database import get_db
 from user.schemas import CreateUserRequest
 from user.services import create_user_account, user_reset_password
+from user.responses import UserResponse, ImageSchema
 
 from core.security import oauth2_scheme
 from user.responses import UserResponse
-from auth.services import get_token, get_user_by_email, create_access_token, get_user_videos, \
-    get_current_user_via_temp_token
-from fastapi import Depends, HTTPException, status
+from auth.services import get_token, get_user_by_email, create_access_token, get_all_imgs_details, \
+    get_current_user_via_temp_token, get_user_img_by_id
+from fastapi import Depends, HTTPException, status, Response
 from email_notification.notify import send_reset_password_mail
-from user.models import UserModel
+from user.models import UserModel, ImgsModel
 from core.security import create_access_token_forget_password
+from fastapi.staticfiles import StaticFiles
+
 
 User = UserModel()
 
@@ -63,14 +71,13 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
     try:
         user = get_user_by_email(db=db, user_email=user_email)
         if user:
-            # Update this line to use 'expiry' instead of 'expire_minutes'
             access_token = await create_access_token_forget_password(data={"email": user.email},
                                                                      expiry=TEMP_TOKEN_EXPIRE_MINUTES * 60)
-            url = f"{request.base_url}reset_password_template?access_token={access_token}"
+            url = f"{request.base_url}reset_password?access_token={access_token}"
             await send_reset_password_mail(recipient_email=user.email, user=user, url=url,
                                            expire_in_minutes=TEMP_TOKEN_EXPIRE_MINUTES)
         return {
-            "result": f"An email has been sent to {user.email} with a link for password reset."
+            "result": f"An email has been sent to  with a link for password reset."
         }
     except Exception as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
@@ -83,10 +90,67 @@ async def get_user_by_emil(request: Request, user_email: str, db: Session = Depe
     return users
 
 
-@router.post('/get_all_videos_details', status_code=status.HTTP_201_CREATED)
-async def get_all_videos(request: Request, db: Session = Depends(get_db)):
-    vids = get_user_videos(db=db)
-    return vids
+@router.get('/get_img_by_id', status_code=status.HTTP_200_OK, response_model=List[ImageSchema])
+async def get_all_img_by_id(
+        request: Request,
+        user_id: int = Query(...),
+        page: int = Query(1, gt=0),  # Default page is 1
+        per_page: int = Query(10, gt=0),  # Default per_page is 10
+        db: Session = Depends(get_db)
+):
+    offset = (page - 1) * per_page
+
+    user_videos = get_user_img_by_id(db=db, user_id=user_id, offset=offset, limit=per_page)
+
+    base_url = str(request.base_url).rstrip("/uploaded_imgs")
+    imgs_with_links = [
+        {
+            "id": img.iduser_img,
+            "user_id": img.user_id,
+            "img_path": f"blob:{base_url}{img.img_path}",
+            "pallets_count": img.pallets_count,
+            "insert_time": img.insert_time.isoformat(),
+        }
+        for img in user_videos
+    ]
+
+    return JSONResponse(content=imgs_with_links)
+
+
+# @router.get("/images/")
+# async def serve_image(img_path: str):
+#     file_path = os.path.join("/home/cyber-makarov/pallet_fast/uploaded_imgs", img_path)
+#     if os.path.isfile(file_path):
+#         return FileResponse(file_path)
+#     return JSONResponse({"error": "Image not found"}, status_code=404)
+
+
+
+# @router.get('/get_img_by_id', status_code=status.HTTP_200_OK, response_model=None)
+# async def get_all_img_by_id(
+#         request: Request,
+#         user_id: int = Query(...),
+#         page: int = Query(1, gt=0),  # Default page is 1
+#         per_page: int = Query(10, gt=0),  # Default per_page is 10
+#         db: Session = Depends(get_db)
+# ):
+#     offset = (page - 1) * per_page
+#
+#     imgs = get_user_img_by_id(db=db, user_id=user_id, offset=offset, limit=per_page)
+#
+#     return imgs
+
+
+# @router.get('/get_img_by_id', status_code=status.HTTP_201_CREATED)
+# async def get_all_img_by_id(request: Request, user_id: int = Query(...), db: Session = Depends(get_db)):
+#     imgs = get_user_img_by_id(db=db, user_id=user_id)
+#     return imgs
+
+
+@router.post('/get_all_imgs', status_code=status.HTTP_201_CREATED)
+async def get_all_imgs(request: Request, db: Session = Depends(get_db)):
+    imgs = get_all_imgs_details(db=db)
+    return imgs
 
 
 @router.post("/reset_password", status_code=status.HTTP_201_CREATED)
@@ -107,3 +171,4 @@ def user_reset_password_route(request: Request, new_password: str,
     except Exception as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
         logger.error(f'From {request.endpoint} {msg}', exc_info=e)
+

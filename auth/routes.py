@@ -14,8 +14,8 @@ router = APIRouter(
     tags=["Auth"],
     responses={404: {"description": "Not found"}},
 )
-
 token_store: Dict[str, str] = {}
+
 
 
 @router.post("/token", status_code=status.HTTP_200_OK)
@@ -27,8 +27,16 @@ async def authenticate_user(data: OAuth2PasswordRequestForm = Depends(), db: Ses
 async def refresh_access_token(refresh_token: str = Header(), db: Session = Depends(get_db)):
     return await get_refresh_token(token=refresh_token, db=db)
 
+
 @router.post("/logout")
 async def logout(token: str = Depends(oauth2_scheme)):
     if token in token_store:
         del token_store[token]
     return {"message": "Successfully logged out"}
+
+
+# @router.get('/logout', status_code=status.HTTP_200_OK)
+# def logout(response: Response, Authorize: AuthJWT = Depends(), token: str = Depends(oauth2_scheme)):
+#     Authorize.unset_jwt_cookies()
+#     response.delete_cookie('logged_in')
+#     return {"message": "Successfully logged out"}
