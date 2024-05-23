@@ -8,7 +8,7 @@ from core.database import get_db
 from auth.services import get_token, get_refresh_token, oauth2_scheme
 from fastapi import APIRouter, Request, Response, status, Depends, HTTPException
 
-
+#demo code
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"],

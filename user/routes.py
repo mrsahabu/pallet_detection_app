@@ -27,6 +27,7 @@ from user.models import UserModel, ImgsModel
 from core.security import create_access_token_forget_password
 from fastapi.staticfiles import StaticFiles
 
+#demo code
 
 User = UserModel()
 

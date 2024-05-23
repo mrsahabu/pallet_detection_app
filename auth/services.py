@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session, session
 from core.database import get_db
 
-
+#demo code
 class BearAuthException(Exception):
     pass
 
