@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from typing import Generator
 from core.config import get_settings
+import logging
+
 
 settings = get_settings()
 
@@ -12,9 +14,11 @@ engine = create_engine(
     pool_size=5,
     max_overflow=0
 )
-
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 
 def get_db() -> Generator:

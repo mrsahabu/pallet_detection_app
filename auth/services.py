@@ -1,5 +1,8 @@
 import sys
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from sqlalchemy import select
 from core.security import verify_password
 from core.config import get_settings
 from auth.responses import TokenResponse
@@ -15,7 +18,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session, session
 from core.database import get_db
 
-#demo code
+
 class BearAuthException(Exception):
     pass
 
@@ -25,6 +28,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 User = UserModel()
+img_model = ImgsModel()
 settings = get_settings()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -71,6 +75,14 @@ async def get_refresh_token(token, db):
     return await _get_user_token(user=user, refresh_token=token)
 
 
+async def get_user_by_token(token: str, db: AsyncSession):
+    result = await db.execute(select(User).where(User.idusers == token))
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    return user
+
+
 async def _get_user_token(user: UserModel, refresh_token=None):
     payload = {"id": user.idusers}
 
@@ -114,13 +126,20 @@ def get_user_by_email(db: Session, user_email: str):
 #     return encoded_jwt
 
 
-def get_user_img_by_id(db: Session, user_id: int, offset: int, limit: int):
-    query = db.query(ImgsModel).filter(ImgsModel.user_id == user_id)
-    query = query.offset(offset).limit(limit)
-    user_videos = query.all()
+async def get_user_img_by_id(db: AsyncSession, user_id: int, offset: int, limit: int):
+    # result = ImgsModel.query.filter(ImgsModel.user_id==user_id).offset(offset).limit(limit).all()
+    query = select(ImgsModel).where(ImgsModel.user_id == user_id).offset(offset).limit(limit)
+    result = db.execute(query)
+    user_images = result.scalars().all()
+    return user_images
 
-    return user_videos
 
+# async def get_user_img_by_id(db: AsyncSession, user_id: int, offset: int, limit: int):
+#     query = select(ImgsModel).where(img_model.user_id == user_id).offset(offset).limit(limit)
+#     result = await db.execute(query)
+#     user_images = result.scalars().all()
+#     for img in user_images:
+#         yield img
 
 def get_all_imgs_details(db: Session):
     user_imgs = db.query(ImgsModel).all()

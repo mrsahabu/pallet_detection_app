@@ -3,7 +3,7 @@ from fastapi.exceptions import HTTPException
 from core.security import get_password_hash
 from sqlalchemy.orm import Session
 from user.models import UserModel
-#demo code 
+
 
 async def create_user_account(data, db):
     user = db.query(UserModel).filter(UserModel.email == data.email).first()

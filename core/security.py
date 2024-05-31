@@ -22,9 +22,9 @@ def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-async def create_access_token(data: dict, expire_minutes: int):
+async def create_access_token(data, expiry: timedelta):
     payload = data.copy()
-    expire_in = datetime.utcnow() + timedelta(minutes=expire_minutes)
+    expire_in = datetime.utcnow() + expiry
     payload.update({"exp": expire_in})
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
@@ -34,6 +34,13 @@ async def create_access_token_forget_password(data, expiry: int):
     expire_in = datetime.utcnow() + timedelta(seconds=expiry)  # Ensure expiry is in seconds
     payload.update({"exp": expire_in})
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+# async def create_access_token_forget_password(data,  expiry: int):
+#     payload = data.copy()
+#     expire_in = datetime.utcnow() + expiry
+#     payload.update({"exp": expire_in})
+#     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
 async def create_refresh_token(data):

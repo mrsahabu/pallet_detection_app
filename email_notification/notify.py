@@ -6,10 +6,13 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 import logging
 import ssl
 
+from fastapi import FastAPI, BackgroundTasks
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+
+
 
 logger = logging.getLogger("uvicorn")
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -101,3 +104,5 @@ def send_email_with_images_and_count(email_to: str, subject: str, message: str, 
             smtp.send_message(msg)
     except Exception as e:
         print("Failed to send email:", str(e))
+
+

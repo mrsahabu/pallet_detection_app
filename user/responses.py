@@ -2,8 +2,9 @@ from pydantic import BaseModel, EmailStr
 from typing import Union
 from datetime import datetime
 from typing import List, Optional
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, func, ForeignKey, Float
 
-#demo code
+
 class BaseResponse(BaseModel):
     class Config:
         from_attributes = True
@@ -22,6 +23,14 @@ class ImageSchema(BaseModel):
     img_path: str
     pallets_count: Optional[int]
     insert_time: datetime
+    price_piece: Float
+    total_price: Float
+    transport_fc_count: Float
+    co2_saving_count: Float
+    total_transport: Float
+    co2_fc: Float
+    transport_cost: Float
+    buy_or_sell: String
 
     class Config:
-        from_attributes = True
+        arbitrary_types_allowed = True
