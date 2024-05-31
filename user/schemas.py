@@ -5,6 +5,7 @@ class CreateUserRequest(BaseModel):
     username: str
     email: EmailStr
     password: str
+    role: str
 
 
 class changepassword(BaseModel):

@@ -12,25 +12,8 @@ class BaseResponse(BaseModel):
 
 
 class UserResponse(BaseModel):
-    idusers: int
+    id: int
     username: str
     email: EmailStr
+    role: str
 
-
-class ImageSchema(BaseModel):
-    id: int
-    user_id: int
-    img_path: str
-    pallets_count: Optional[int]
-    insert_time: datetime
-    price_piece: Float
-    total_price: Float
-    transport_fc_count: Float
-    co2_saving_count: Float
-    total_transport: Float
-    co2_fc: Float
-    transport_cost: Float
-    buy_or_sell: String
-
-    class Config:
-        arbitrary_types_allowed = True

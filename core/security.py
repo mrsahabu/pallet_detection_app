@@ -67,7 +67,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=None):
     if not db:
         db = next(get_db())
 
-    user = db.query(UserModel).filter(UserModel.idusers == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
     return user
 
 

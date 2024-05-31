@@ -8,7 +8,7 @@ from core.config import get_settings
 from auth.responses import TokenResponse
 from core.security import create_access_token, create_refresh_token, get_token_payload
 from fastapi import Depends, HTTPException, status
-from user.models import UserModel, ImgsModel
+from user.models import UserModel, FileModel, DataModel
 # from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -25,10 +25,10 @@ class BearAuthException(Exception):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 User = UserModel()
-img_model = ImgsModel()
+img_model = DataModel()
 settings = get_settings()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -84,7 +84,7 @@ async def get_user_by_token(token: str, db: AsyncSession):
 
 
 async def _get_user_token(user: UserModel, refresh_token=None):
-    payload = {"id": user.idusers}
+    payload = {"id": user.id}
 
     access_token_expiry = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
@@ -97,54 +97,23 @@ async def _get_user_token(user: UserModel, refresh_token=None):
         expires_in=access_token_expiry.seconds  # in seconds
     )
 
-
-# async def _get_user_token(user: UserModel, refresh_token=None):
-#     payload = {"id": user.idusers}
-#
-#     access_token_expiry = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-#
-#     access_token = await create_access_token(payload, access_token_expiry)
-#     if not refresh_token:
-#         refresh_token = await create_refresh_token(payload)
-#     return TokenResponse(
-#         access_token=access_token,
-#         refresh_token=refresh_token,
-#         expires_in=access_token_expiry.seconds  # in seconds
-#     )
-
-
-def get_user_by_email(db: Session, user_email: str):
-    user = db.query(UserModel).filter(UserModel.email == user_email).first()
-    return user
-
-
-# def create_access_token(data: str, expire_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES):
-#     to_encode = {"sub": data}
-#     expire = datetime.utcnow() + timedelta(minutes=expire_minutes)
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
-
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
 
 async def get_user_img_by_id(db: AsyncSession, user_id: int, offset: int, limit: int):
-    # result = ImgsModel.query.filter(ImgsModel.user_id==user_id).offset(offset).limit(limit).all()
-    query = select(ImgsModel).where(ImgsModel.user_id == user_id).offset(offset).limit(limit)
+    # result = DataModel.query.filter(DataModel.user_id==user_id).offset(offset).limit(limit).all()
+    query = select(DataModel).where(DataModel.user_id == user_id).offset(offset).limit(limit)
     result = db.execute(query)
     user_images = result.scalars().all()
     return user_images
 
 
 # async def get_user_img_by_id(db: AsyncSession, user_id: int, offset: int, limit: int):
-#     query = select(ImgsModel).where(img_model.user_id == user_id).offset(offset).limit(limit)
+#     query = select(DataModel).where(img_model.user_id == user_id).offset(offset).limit(limit)
 #     result = await db.execute(query)
 #     user_images = result.scalars().all()
 #     for img in user_images:
 #         yield img
-
-def get_all_imgs_details(db: Session):
-    user_imgs = db.query(ImgsModel).all()
-
-    return user_imgs
 
 
 def get_token_payload(token: str = Depends(oauth2_scheme)) -> str:
@@ -178,7 +147,7 @@ def get_token_payload(token: str = Depends(oauth2_scheme)) -> str:
 #         raise BearAuthException("Token could not be validated")
 
 
-def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
+async def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
     try:
         user_email = get_token_payload(access_token)
         print("******", user_email, "**********")

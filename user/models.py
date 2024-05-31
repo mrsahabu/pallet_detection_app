@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column, Integer, String, DateTime, func, Foreign
 from datetime import datetime
 from sqlalchemy.orm import relationship
 from core.database import Base
+from sqlalchemy.sql.sqltypes import Float as SQLAlchemyFloat
 
 
 class UserModel(Base):
@@ -11,6 +12,9 @@ class UserModel(Base):
     email = Column(String(255), unique=True, index=True)
     password = Column(String(512))
     role = Column(String(50))
+
+    class Config:
+        orm_mode = True
 
 
 class DataModel(Base):
@@ -30,6 +34,8 @@ class DataModel(Base):
 
     files = relationship("FileModel", back_populates="data")
 
+    class Config:
+        orm_mode = True
 
 class FileModel(Base):
     __tablename__ = "image_data"
@@ -39,3 +45,17 @@ class FileModel(Base):
 
     # Define relationship to DataModel
     data = relationship("DataModel", back_populates="files")
+
+    class Config:
+        orm_mode = True
+
+    
+
+# Map SQLAlchemy Float type to Pydantic float type
+DataModel.__annotations__["price_piece"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["total_price"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["transport_fc_count"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["co2_saving_count"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["total_transport"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["co2_fc"] = (float, SQLAlchemyFloat)
+DataModel.__annotations__["transport_cost"] = (float, SQLAlchemyFloat)

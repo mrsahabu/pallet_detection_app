@@ -24,23 +24,19 @@ def create_folder_if_not_exists(folder_name):
 
     return folder_name
 
-
-def img_pred(img, folder_name, img_name):
-    # Load a model
+#
+def image_prediction(img, folder_name, img_name):
     total_count = 0
-    model = YOLO('/home/cyber-makarov/pallet_fast/model/pallets_best.pt')  # pretrained YOLOv8n model
-    results = model(img)[0]  # return a generator of Results objects
+    model = YOLO('/home/imsadka/Documents/GoodFolks/pallets_app/model/pallets_best.pt')
+    results = model(img)[0]
     detections = sv.Detections.from_ultralytics(results)
-    #detect_rest = results.show()
     count = len(results.boxes)
     total_count += count
     full_path = create_folder_if_not_exists(folder_name)
-    img_path = os.path.join(full_path, f"{img_name}.jpg")
+    img_path = os.path.join(full_path, f"{img_name}")
 
     if img.mode == 'RGBA':
         img = img.convert('RGB')
-
-        # Save the input image with a different variable name
     img.save(img_path)
 
     return total_count, img_path

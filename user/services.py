@@ -3,6 +3,10 @@ from fastapi.exceptions import HTTPException
 from core.security import get_password_hash
 from sqlalchemy.orm import Session
 from user.models import UserModel
+from auth.services import get_user_by_email
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def create_user_account(data, db):
@@ -13,6 +17,7 @@ async def create_user_account(data, db):
     new_user = UserModel(
         username=data.username,
         email=data.email,
+        role=data.role,
         password=get_password_hash(data.password),
     )
     db.add(new_user)
@@ -21,14 +26,10 @@ async def create_user_account(data, db):
     return new_user
 
 
-def user_reset_password(db: Session, email: str, new_password: str):
-    try:
-        user = db.query(UserModel).filter(UserModel.email == email)
-        user.password = get_password_hash(new_password)
-        # db.add(user)
+def reset_password(db: Session, email: str, new_password: str):
+    user = get_user_by_email(db, email)
+    if user:
+        user.password = pwd_context.hash(new_password)
         db.commit()
-
-    except Exception as e:
-        raise (e)
-        return False
-    return True
+        return True
+    return False

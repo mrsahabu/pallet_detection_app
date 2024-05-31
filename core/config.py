@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=env_path)
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/pallets_db"
+    DATABASE_URL: str = "mysql+pymysql://root:password@localhost:3306/pallets_db"
 
     JWT_SECRET: str = os.getenv('JWT_SECRET', '709d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7')
     JWT_ALGORITHM: str = os.getenv('JWT_ALGORITHM', "HS256")
