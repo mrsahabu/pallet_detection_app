@@ -89,10 +89,13 @@ async def user_forgot_password(request: Request, user_email: str, db: Session = 
 
 
 @user_router.post("/reset_password", status_code=status.HTTP_201_CREATED)
-async def reset_password_route(new_password: str, access_token: str = Query(), db: Session = Depends(get_db)):
+async def reset_password_route(
+    new_password: str,
+    user: UserModel = Depends(get_current_user_via_temp_token),
+    access_token: str = Query(),
+    db: Session = Depends(get_db)
+):
     try:
-        
-        user = get_current_user_via_temp_token(access_token, db)
         reset_password(db, user.email, new_password)
         return {"message": "Password reset successful"}
     except Exception as e:

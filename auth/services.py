@@ -97,8 +97,12 @@ async def _get_user_token(user: UserModel, refresh_token=None):
         expires_in=access_token_expiry.seconds  # in seconds
     )
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(User).filter(User.email == email).first()
+def get_user_data_by_email(db: Session, email: str):
+    user = db.query(UserModel).filter(UserModel.email == email).first()
+
+    return user
+
+
 
 async def get_user_img_by_id(db: AsyncSession, user_id: int, offset: int, limit: int):
     # result = DataModel.query.filter(DataModel.user_id==user_id).offset(offset).limit(limit).all()
@@ -127,7 +131,6 @@ def get_token_payload(token: str = Depends(oauth2_scheme)) -> str:
         return payload_sub
     except JWTError as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
-        print(msg, '******************************************')
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="JWT Token could not be validated",
@@ -135,22 +138,9 @@ def get_token_payload(token: str = Depends(oauth2_scheme)) -> str:
         )
 
 
-# def get_token_payload(token: str = Depends(oauth2_scheme)):
-#
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         payload_sub: str = payload.get("sub")
-#         if payload_sub is None:
-#             raise BearAuthException("Token could not be validated")
-#         return payload_sub
-#     except JWTError:
-#         raise BearAuthException("Token could not be validated")
-
-
 async def get_current_user_via_temp_token(access_token: str, db: Session = Depends(get_db)):
     try:
         user_email = get_token_payload(access_token)
-        print("******", user_email, "**********")
     except BearAuthException as e:
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
         raise HTTPException(
@@ -159,11 +149,10 @@ async def get_current_user_via_temp_token(access_token: str, db: Session = Depen
             headers={"WWW-Authenticate": "Bearer"}
         )
     try:
-        user = db.query(User).filter(User.email == user_email).first()
+        user = db.query(UserModel).filter(UserModel.email == user_email).first()
+
     except Exception as e:
-        # print(f"DB Query Error: {e}")
         msg = "Error [{0}] at line [{1}]".format(str(e), sys.exc_info()[2].tb_lineno)
-        print("******", msg)
         raise
 
     if not user:
