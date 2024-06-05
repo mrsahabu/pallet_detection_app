@@ -43,8 +43,8 @@ const LoginForm = () => {
             localStorage.setItem("tokens", JSON.stringify(res.data));
             toast.success(" Login successfully");
             setIsLoading(false);
-            if (formData.username === "admin") {
-              localStorage.setItem("admin",true);
+            if (res?.data?.role === "admin") {
+              localStorage.setItem("admin", true);
               navigate("/admin");
             } else {
               navigate("/upload-picture");
@@ -81,7 +81,7 @@ const LoginForm = () => {
             className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
               errors.email ? "border-red-500" : ""
             }`}
-            id="username"
+            id="email"
             type="email"
             name="username"
             placeholder="Enter your email"

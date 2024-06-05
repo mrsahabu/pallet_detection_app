@@ -1,0 +1,40 @@
+tr {
+  border-bottom: 1px solid gray !important;
+}
+
+.p-datatable-thead > tr > th {
+  background-color: #a46bf8;
+  color: white;
+}
+
+.p-column-header-content > span > svg {
+  color: white !important;
+}
+
+.p-menuitem-text {
+  color: white;
+}
+
+.p-menubar {
+  background-color: #a46bf8;
+  padding: 1.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.p-menubar-root-list {
+  background-color: #a46bf8;
+}
+
+.p-menubar-button {
+  color: white;
+  padding-left: 1rem;
+}
+
+.p-menuitem-icon {
+  color: white;
+}
+
+.shadow-card {
+  box-shadow: 1px -1px 10px 12px #ccc;
+}

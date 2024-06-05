@@ -1,35 +1,37 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import ApiService from "../shared/data-service";
 import { toast } from "react-toastify";
 
-const ForgotPassword = () => {
+const ResetPassword = () => {
   const api = new ApiService();
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const navigation = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const accessToken = searchParams.get("access_token");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setEmail(e.target.value);
+    setPassword(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Basic validation
-    if (!email.trim()) {
-      setError("Email is required");
-      return;
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Invalid email address");
+    if (!password.trim()) {
+      setError("Password is required");
       return;
     }
     toast.loading("Please wait");
     api
-      .forgetPassword(email)
+      .resetPassword(password, accessToken)
       .then((res) => {
         if (res.data) {
           toast.dismiss();
-          toast.success(`Password reset link has been sent to ${email}`);
+          toast.success(`Password updated successfully`);
+          navigation("/");
         }
       })
       .catch((err) => {
@@ -37,7 +39,7 @@ const ForgotPassword = () => {
         toast.error(`Something went wrong ${err}`);
       });
 
-    setEmail("");
+    setPassword("");
     setError("");
   };
 
@@ -47,23 +49,23 @@ const ForgotPassword = () => {
         className="w-full max-w-md bg-white shadow-2xl rounded px-8 pt-6 pb-8 mb-4"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Forgot Password</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Reset Password</h2>
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="email"
+            htmlFor="password"
           >
-            Email
+            Enter new Password
           </label>
           <input
             className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
               error ? "border-red-500" : ""
             }`}
-            id="email"
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            value={email}
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={password}
             onChange={handleChange}
           />
           {error && <p className="text-red-500 text-xs italic">{error}</p>}
@@ -83,10 +85,9 @@ const ForgotPassword = () => {
             Go Back
           </Link>
         </div>
-      
       </form>
     </div>
   );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

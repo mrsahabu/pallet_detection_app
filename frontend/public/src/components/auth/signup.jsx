@@ -37,6 +37,7 @@ const SignupForm = () => {
     }
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
+      formData.role = "user";
       setIsLoading(true);
       apiService
         .registerUser(formData)
@@ -51,7 +52,6 @@ const SignupForm = () => {
           toast.error(`Something went wrong ${err}`);
           setIsLoading(false);
         });
-      console.log("Form submitted:", formData);
     }
   };
 

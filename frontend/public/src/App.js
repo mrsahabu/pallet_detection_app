@@ -10,6 +10,8 @@ import Navbar from "./components/shared/navbar";
 import AdminDashboard from "./components/admin/dashboard";
 import ApiService from "./components/shared/data-service";
 import AppWrapper from "./components/shared/AppWraper";
+import ResetPasswordForm from "./components/auth/resetPassword";
+import UserPreviousRecords from "./components/home/userRecords";
 
 function App() {
   const api = new ApiService();
@@ -25,6 +27,7 @@ function App() {
         }
       })
       .catch((err) => {
+        toast.dismiss();
         toast.error(`Something went wrong ${err}`);
       });
   };
@@ -43,8 +46,12 @@ function App() {
           <Route path="/" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          {isAuthenticated && !isAdmin && (
+          <Route path="/reset_password" element={<ResetPasswordForm />} />
+          {isAuthenticated && (
             <Route path="/upload-picture" element={<UploadCapturePicture />} />
+          )}
+          {isAuthenticated && (
+            <Route path="/previous-record" element={<UserPreviousRecords />} />
           )}
           {isAuthenticated && isAdmin && (
             <Route path="/admin" element={<AdminDashboard />} />

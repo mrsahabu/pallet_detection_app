@@ -1,22 +1,15 @@
 import React from "react";
-import { useLocation,Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import axios from "axios";
 import ApiService from "./data-service";
-const restrictedPaths = ["/", "/signup", "/forgot-password"];
+const restrictedPaths = ["/", "/signup", "/forgot-password", "/reset_password"];
 
 const AppWrapper = (props) => {
   const api = new ApiService();
   const isAuthenticated = api.getAccessToken();
-  const isAdmin = api.getAdmin();
   const location = useLocation();
 
-  if (isAuthenticated) {
-    if (isAdmin) {
-      return <Navigate to="/admin" replace />;
-    } else {
-      return <Navigate to="/upload-picture" />;
-    }
-  } else if (!isAuthenticated && !restrictedPaths.includes(location.pathname)) {
+  if (!isAuthenticated && !restrictedPaths.includes(location.pathname)) {
     return <Navigate to="/" />;
   }
 

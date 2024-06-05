@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
-import Modal from "../shared/modal";
+import Modal from "./modal";
+import { toast } from "react-toastify";
 
 const CaptureImage = ({ openModal, setOpenModal, capturedImages }) => {
   const webcamRef = React.useRef(null);
@@ -16,8 +17,8 @@ const CaptureImage = ({ openModal, setOpenModal, capturedImages }) => {
 
     const imageSrc = webcamRef.current.getScreenshot();
     capturedImages(imageSrc);
-    closeModal();
-  }, [webcamRef, capturedImages,closeModal]);
+    toast.success("Image Uploaded Successfully")
+  }, [webcamRef, capturedImages]);
 
   useEffect(() => {
     setIsModalOpen(openModal);
@@ -30,7 +31,7 @@ const CaptureImage = ({ openModal, setOpenModal, capturedImages }) => {
         audio={false}
         height={120}
         ref={webcamRef}
-        screenshotFormat="image/jpeg, jpg"
+        screenshotFormat="image/jpeg"
         width={"100%"}
       />
 
